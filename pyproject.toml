@@ -35,7 +35,7 @@ all = [
 ]
 
 [project.scripts]
-k2 = "k2_backbone.cli:main"
+k2 = "k2_backbone.core.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/0x-wzw/k2-backbone"
