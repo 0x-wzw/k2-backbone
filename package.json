@@ -1,15 +1,17 @@
 {
   "name": "k2-backbone",
-  "version": "0.1.0",
-  "description": "Kimi K2.6's Production Backbone — TypeScript adapters for decomposition, routing, execution, compression, federation",
+  "version": "0.2.0",
+  "description": "Kimi K2.6's Production Backbone — with Progressive Loading and Recursive Retrieval",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts"
+    "test": "vitest && python -m pytest tests/",
+    "test:unit": "vitest run && python -m pytest tests/unit/",
+    "test:integration": "python -m pytest tests/integration/",
+    "lint": "eslint src/**/*.ts && flake8 src/skills/ tests/",
+    "format": "prettier --write src/**/*.ts && black src/skills/ tests/"
   },
   "dependencies": {
     "openai": ">=4.0.0",
