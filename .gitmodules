@@ -31,3 +31,6 @@
 [submodule "frameworks/sentientforge"]
 	path = frameworks/sentientforge
 	url = https://github.com/0x-wzw/sentientforge.git
+[submodule "frameworks/openclaw-namespace"]
+	path = frameworks/openclaw-namespace
+	url = https://github.com/0x-wzw/openclaw-namespace.git
