@@ -1,0 +1,18 @@
+[submodule "frameworks/necroswarm"]
+	path = frameworks/necroswarm
+	url = https://github.com/0x-wzw/necroswarm.git
+[submodule "frameworks/neuroswarm"]
+	path = frameworks/neuroswarm
+	url = https://github.com/0x-wzw/neuroswarm.git
+[submodule "frameworks/obliviarch"]
+	path = frameworks/obliviarch
+	url = https://github.com/0x-wzw/obliviarch.git
+[submodule "frameworks/voidtether"]
+	path = frameworks/voidtether
+	url = https://github.com/0x-wzw/voidtether.git
+[submodule "frameworks/memory-evolution"]
+	path = frameworks/memory-evolution
+	url = https://github.com/0x-wzw/openclaw-memory-evolution.git
+[submodule "frameworks/deterministic-retrieval"]
+	path = frameworks/deterministic-retrieval
+	url = https://github.com/0x-wzw/openclaw-deterministic-retrieval.git
