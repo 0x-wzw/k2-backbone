@@ -23,31 +23,97 @@ from typing import Any, Optional
 COUNCIL_CONFIG = Path(__file__).parent.parent.parent / "frameworks" / "necroswarm" / "backend" / "app" / "config" / "council-members.json"
 
 SUBTASK_TYPE_TO_SPECIALIZATION = {
-    "research":        ["deepseek", "glm", "kimi"],
-    "code_generation": ["claude", "kimi", "deepseek"],
-    "code_review":     ["claude", "kimi", "qwen"],
-    "testing":         ["qwen", "kimi", "deepseek"],
-    "documentation":   ["claude", "glm", "kimi"],
-    "analysis":        ["kimi", "deepseek", "glm"],
-    "writing":         ["claude", "kimi", "glm"],
-    "synthesis":       ["kimi", "claude", "deepseek"],
-    "optimization":    ["kimi", "deepseek", "qwen"],
-    "data_processing": ["deepseek", "qwen", "glm"],
-    "visualization":   ["glm", "kimi", "claude"],
-    "integration":     ["kimi", "claude", "qwen"],
+    "research":        ["qwen3.5-122b", "gemma4-31b", "deepseek-v3.2"],
+    "code_generation": ["glm-5.1", "deepseek-v3.2", "qwen3-coder-next"],
+    "code_review":     ["devstral-small-2", "glm-5.1", "gemma4-31b"],
+    "testing":         ["qwen3.5-122b", "gemma4-31b", "devstral-small-2"],
+    "documentation":   ["qwen3.5-122b", "gemma4-31b", "kimi-k2.6"],
+    "analysis":        ["qwen3.5-122b", "deepseek-v3.2", "gemma4-31b"],
+    "writing":         ["qwen3.5-122b", "gemma4-31b", "deepseek-v3.2"],
+    "synthesis":       ["qwen3.5-122b", "kimi-k2.6", "deepseek-v3.2"],
+    "optimization":    ["glm-5.1", "deepseek-v3.2", "qwen3.5-122b"],
+    "data_processing": ["deepseek-v3.2", "nemotron-3-super", "gemma4-31b"],
+    "visualization":   ["gemma4-31b", "kimi-k2.6", "qwen3.5-122b"],
+    "integration":     ["kimi-k2.6", "nemotron-3-super", "deepseek-v3.2"],
 }
 
-# Cost per 1K tokens (output), approximate USD
+# Cost per 1K tokens (output), approximate USD - Ollama Cloud
+# These are per-1K-token rates (not per-token)
 COST_PER_1K = {
-    "kimi":      3.00,   # K2.6
-    "claude":    3.75,   # Opus 4
-    "deepseek":  0.50,   # V3.2
-    "glm":       0.30,   # GLM-5
-    "qwen":      0.10,   # Qwen 2.5
+    "glm-5.1":           5.00,    # T0 Premium - SWE SOTA ($5/1M = $0.005/1K)
+    "qwen3.5-122b":      4.00,    # T0 Premium - Reasoning king
+    "kimi-k2.6":         3.00,    # T1 - Agentic orchestration
+    "deepseek-v3.2":     2.00,    # T1 - Balanced performer
+    "gemma4-31b":        1.50,    # T1 - Multimodal
+    "nemotron-3-super":  1.20,    # T2 - Multi-agent efficiency
+    "devstral-small-2":  1.00,    # T2 - SWE specialist
+    "glm-5":             1.80,    # T2 - Complex systems
+    "deepseek-v4-pro":   2.50,    # T2 - Frontier reasoning
+    "deepseek-v4-flash": 0.60,    # T3 - Budget long-context
+    "gemini-3-flash":    0.50,    # T3 - Speed
+    "qwen3-coder-next":  0.80,    # T3 - Coding workflows
+    "minimax-m2.7":    1.00,    # T3 - Coding + agentic
+    "nemotron-3-nano":   0.10,    # T4 - Ultra-cheap fallback
+    "gemma4-e2b":        0.08,    # T4 - Edge
+    "qwen3.5-0.8b":      0.05,    # T4 - Ultra-small
+    "kimi":              3.00,    # Legacy compat
+    "claude":            3.75,    # Legacy compat
+    "deepseek":          0.50,    # Legacy compat
+    "glm":               0.30,    # Legacy compat
+    "qwen":              0.10,    # Legacy compat
 }
 
-# Capability scores (0-10) per task type
+# Capability scores (0-10) per task type - Ollama Cloud best-in-class
 CAPABILITY_MATRIX = {
+    "kimi-k2.6": {
+        "research": 7, "code": 7, "analysis": 8, "writing": 7,
+        "optimization": 7, "orchestration": 10, "integration": 9
+    },
+    "glm-5.1": {
+        "research": 6, "code": 10, "analysis": 8, "writing": 6,
+        "optimization": 9, "orchestration": 5, "integration": 5
+    },
+    "qwen3.5-122b": {
+        "research": 10, "code": 9, "analysis": 10, "writing": 8,
+        "optimization": 8, "orchestration": 6, "integration": 5
+    },
+    "deepseek-v3.2": {
+        "research": 8, "code": 9, "analysis": 9, "writing": 7,
+        "optimization": 8, "orchestration": 6, "integration": 6
+    },
+    "gemma4-31b": {
+        "research": 8, "code": 8, "analysis": 8, "writing": 7,
+        "optimization": 7, "orchestration": 5, "integration": 5
+    },
+    "nemotron-3-super": {
+        "research": 6, "code": 5, "analysis": 7, "writing": 5,
+        "optimization": 5, "orchestration": 8, "integration": 7
+    },
+    "devstral-small-2": {
+        "research": 4, "code": 8, "analysis": 5, "writing": 4,
+        "optimization": 4, "orchestration": 3, "integration": 3
+    },
+    "deepseek-v4-flash": {
+        "research": 6, "code": 7, "analysis": 7, "writing": 5,
+        "optimization": 6, "orchestration": 4, "integration": 4
+    },
+    "gemini-3-flash": {
+        "research": 5, "code": 6, "analysis": 6, "writing": 5,
+        "optimization": 5, "orchestration": 4, "integration": 4
+    },
+    "qwen3-coder-next": {
+        "research": 4, "code": 9, "analysis": 5, "writing": 4,
+        "optimization": 5, "orchestration": 3, "integration": 3
+    },
+    "minimax-m2.7": {
+        "research": 5, "code": 7, "analysis": 5, "writing": 5,
+        "optimization": 5, "orchestration": 5, "integration": 4
+    },
+    "nemotron-3-nano": {
+        "research": 3, "code": 4, "analysis": 4, "writing": 3,
+        "optimization": 3, "orchestration": 3, "integration": 3
+    },
+    # Legacy compatibility
     "kimi":      {"research": 9, "code": 9, "analysis": 10, "writing": 8, "optimization": 9},
     "claude":    {"research": 7, "code": 10, "analysis": 8, "writing": 10, "optimization": 8},
     "deepseek":  {"research": 10, "code": 8, "analysis": 9, "writing": 7, "optimization": 8},
@@ -243,6 +309,39 @@ class NecroSwarmRouter:
         return winner, probs, confidence, strategy
 
     def route(self, task_spec: dict) -> dict:
+
+        budget = task_spec.get("budget", {}).get("max_usd", 10.0)
+        total_estimated = sum((s.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(s.get("assigned_model", ""), 1.0) for s in routed_spec.get("subtasks", []))
+        
+        # Budget enforcement: downgrade expensive tasks if over budget
+        if total_estimated > budget and budget > 0:
+            logger.warning(f"Budget exceeded: ${total_estimated:.2f} > ${budget:.2f}. Applying fallback.")
+            for st in sorted(routed_spec["subtasks"], key=lambda x: COST_PER_1K.get(x.get("assigned_model", ""), 0), reverse=True):
+                current_model = st.get("assigned_model", "")
+                current_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(current_model, 0)
+                task_type = st.get("type", "")
+                candidates = self._get_candidates(task_type)
+                for fallback in sorted(candidates, key=lambda m: COST_PER_1K.get(m, 999)):
+                    if fallback == current_model:
+                        continue
+                    fallback_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(fallback, 0)
+                    if fallback_cost < current_cost:
+                        st["assigned_model"] = fallback
+                        total_estimated -= (current_cost - fallback_cost)
+                        break
+                if total_estimated <= budget:
+                    break
+            
+            routed_spec["routing"]["total_estimated_cost_usd"] = total_estimated
+            routed_spec["routing"]["budget_enforced"] = True
+            routed_spec["routing"]["original_cost"] = routed_spec["routing"].get("total_estimated_cost_usd", 0)
+
+    # Update budget allocations
+    for s in routed_spec["subtasks"]:
+        tokens = s.get("estimated_tokens", 0)
+        model = s.get("assigned_model", "")
+        cost = (tokens / 1000) * COST_PER_1K.get(model, 1.0)
+        s["budget_allocation"] = cost / budget if budget > 0 else 0
         """
         Route all subtasks in a TaskSpec through the council.
 
