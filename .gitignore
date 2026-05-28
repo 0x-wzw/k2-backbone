@@ -33,6 +33,7 @@ dist/
 
 # Environment
 .env
+.env.*
 .venv
 venv/
 ENV/
@@ -45,6 +46,22 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets / credentials
+*.pem
+*.key
+*.crt
+*.p12
+secrets.json
+credentials.json
+config.local.*
+
+# CLI output artifacts
+task_spec.json
+routed_spec.json
+execution_result.json
+bridge_result.json
+integrated_result.json
 
 # Project specific
 *.task_spec.json
