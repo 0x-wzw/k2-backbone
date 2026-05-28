@@ -16,3 +16,15 @@
 [submodule "frameworks/deterministic-retrieval"]
 	path = frameworks/deterministic-retrieval
 	url = https://github.com/0x-wzw/openclaw-deterministic-retrieval.git
+[submodule "frameworks/scoutforge"]
+	path = frameworks/scoutforge
+	url = https://github.com/0x-wzw/scoutforge.git
+[submodule "frameworks/browser-automation"]
+	path = frameworks/browser-automation
+	url = https://github.com/0x-wzw/browser-automation.git
+[submodule "frameworks/agent-identity"]
+	path = frameworks/agent-identity
+	url = https://github.com/0x-wzw/agent-identity.git
+[submodule "frameworks/x-interact"]
+	path = frameworks/x-interact
+	url = https://github.com/0x-wzw/x-interact.git
