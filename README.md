@@ -231,7 +231,7 @@ git submodule add https://github.com/0x-wzw/openclaw-deterministic-retrieval.git
 
 | Component | Status | Submodule |
 |---|---|---|
-| Decomposer (K2.6 adapter) | 🟡 In Progress | — |
+| Decomposer (K2.6 adapter) | ✅ MVP Ready | — |
 | Router (NecroSwarm) | ✅ Ready | `frameworks/necroswarm` |
 | Executor (NeuroSwarm) | ✅ Ready | `frameworks/neuroswarm` |
 | Memory (Obliviarch) | ✅ Ready | `frameworks/obliviarch` |
@@ -240,6 +240,7 @@ git submodule add https://github.com/0x-wzw/openclaw-deterministic-retrieval.git
 | Memory Evolution | ✅ Ready | `frameworks/memory-evolution` |
 | RuFlo Plugin | 🟡 Scaffolded | `plugins/ruflo-k2-backbone` |
 | OpenClaw Skill | ⚪ Planned | `plugins/openclaw-k2-backbone` |
+| GitHub Repo | 🟡 Local, needs push | `github.com/0x-wzw/k2-backbone` |
 
 ---
 
