@@ -10,7 +10,7 @@ import json
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 
-from skills.recursive_retrieval import ContextTree, MemoryLayer
+from k2_backbone.skills.recursive_retrieval import ContextTree, MemoryLayer
 
 
 @dataclass

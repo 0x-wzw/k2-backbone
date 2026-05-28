@@ -8,9 +8,9 @@ import os
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from skills.progressive_loader import ProgressiveSkillLoader, K2BackboneSkillRegistry
-from skills.recursive_retrieval import ContextTree, K2BackboneMemoryBridge, create_context_tree
-from skills.chat_router import K2ChatRouter, ChatConfig
+from k2_backbone.skills.progressive_loader import ProgressiveSkillLoader, K2BackboneSkillRegistry
+from k2_backbone.skills.recursive_retrieval import ContextTree, K2BackboneMemoryBridge, create_context_tree
+from k2_backbone.skills.chat_router import K2ChatRouter, ChatConfig
 
 
 class K2BackboneV2:
