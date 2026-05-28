@@ -1,0 +1,67 @@
+{
+  "name": "ruflo-k2-backbone",
+  "version": "1.0.0",
+  "description": "K2-Backbone plugin for ruflo: K2.6 decomposition, NeuroSwarm execution, Obliviarch compression, AutoMon cost tracking",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ruflo": "^1.0.0"
+  },
+  "ruflo": {
+    "plugin": {
+      "id": "k2-backbone",
+      "name": "K2-Backbone",
+      "description": "Kimi K2.6's Production Backbone — decomposition, routing, execution, compression, federation",
+      "version": "1.0.0",
+      "author": "0x-wzw",
+      "tags": ["k2.6", "backbone", "decomposition", "cost-tracking", "swarm", "memory"],
+      "entry": "src/index.ts",
+      "commands": [
+        {
+          "name": "k2-decompose",
+          "description": "Decompose task with K2.6 into TaskSpec",
+          "handler": "k2Decompose"
+        },
+        {
+          "name": "k2-route",
+          "description": "Route TaskSpec through 10-D Council",
+          "handler": "k2Route"
+        },
+        {
+          "name": "k2-execute",
+          "description": "Execute with NeuroSwarm dual-phase",
+          "handler": "k2Execute"
+        },
+        {
+          "name": "k2-run",
+          "description": "Full pipeline: decompose → route → execute → compress",
+          "handler": "k2Run"
+        },
+        {
+          "name": "k2-compress",
+          "description": "Compress execution trace via Obliviarch",
+          "handler": "k2Compress"
+        },
+        {
+          "name": "k2-query",
+          "description": "Query Obliviarch compressed memories",
+          "handler": "k2Query"
+        },
+        {
+          "name": "k2-cost",
+          "description": "Get unified cost report (AutoMon + K2-Backbone)",
+          "handler": "k2Cost"
+        },
+        {
+          "name": "k2-status",
+          "description": "Get K2-Backbone pipeline status",
+          "handler": "k2Status"
+        }
+      ]
+    }
+  }
+}
