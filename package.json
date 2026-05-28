@@ -1,0 +1,30 @@
+{
+  "name": "k2-backbone",
+  "version": "0.1.0",
+  "description": "Kimi K2.6's Production Backbone — TypeScript adapters for decomposition, routing, execution, compression, federation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "dependencies": {
+    "openai": ">=4.0.0",
+    "zod": ">=3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": ">=20.0.0",
+    "typescript": ">=5.4.0",
+    "vitest": ">=1.6.0",
+    "eslint": ">=9.0.0",
+    "prettier": ">=3.2.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0x-wzw/k2-backbone.git"
+  }
+}
