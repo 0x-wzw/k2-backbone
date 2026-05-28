@@ -218,6 +218,11 @@ OLLAMA_CLOUD_MODELS = {
 # ── Task Type → Best Model Mapping ──────────────────────────────────
 
 TASK_TYPE_TO_MODEL = {
+    # Chat / Conversation — T0 with deepseek-v4-flash (fast, efficient, good for chat)
+    "chat":                ["deepseek-v4-flash", "kimi-k2.6", "deepseek-v3.2"],
+    "conversation":        ["deepseek-v4-flash", "kimi-k2.6", "deepseek-v3.2"],
+    "dialogue":            ["deepseek-v4-flash", "kimi-k2.6", "deepseek-v3.2"],
+
     # Premium tasks — use T0/T1
     "code_generation":     ["glm-5.1", "deepseek-v3.2", "qwen3-coder-next"],
     "optimization":        ["glm-5.1", "deepseek-v3.2", "gemma4-31b"],
@@ -236,6 +241,20 @@ TASK_TYPE_TO_MODEL = {
 
     # Budget tasks — use T2/T3
     "review":              ["devstral-small-2", "gemma4-31b", "deepseek-v4-flash"],
+}
+
+# ── Chat Configuration ────────────────────────────────────────────────
+# K2 T0 Chat Model — deepseek-v4-flash:cloud
+# Set via environment: export K2_CHAT_MODEL=deepseek-v4-flash
+# This makes deepseek-v4-flash the default for chat/conversation tasks
+
+CHAT_MODEL_CONFIG = {
+    "default_chat_model": "deepseek-v4-flash",
+    "fallback_chat_model": "kimi-k2.6",
+    "chat_context_size": 1000000,  # 1M context for long conversations
+    "chat_cost_per_1m": 0.60,
+    "chat_strengths": ["fast_response", "long_context", "cost_efficient"],
+    "chat_benchmarks": {"Response_Time": 95.0, "Context_Retention": 85.0},
 }
 
 
@@ -349,6 +368,7 @@ __all__ = [
     'COUNCIL_SEATS',
     'CAPABILITY_MATRIX',
     'COST_PER_1K',
+    'CHAT_MODEL_CONFIG',
     'ModelTier',
     'OllamaModel',
 ]

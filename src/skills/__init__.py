@@ -1,6 +1,6 @@
 """
 K2-Backbone Skills Package
-Integrates Progressive Loading and Recursive Retrieval
+Integrates Progressive Loading, Recursive Retrieval, and Chat Routing
 """
 
 from .progressive_loader import (
@@ -22,6 +22,9 @@ from .recursive_retrieval import (
     TraversalConfig,
 )
 
+from .chat_router import K2ChatRouter, ChatConfig, route_chat
+from .integration import K2BackboneV2, create_k2_v2
+
 __all__ = [
     "ProgressiveSkillLoader",
     "K2BackboneSkillRegistry",
@@ -36,4 +39,9 @@ __all__ = [
     "MemoryLayer",
     "MergeStrategy",
     "TraversalConfig",
+    "K2ChatRouter",
+    "ChatConfig",
+    "route_chat",
+    "K2BackboneV2",
+    "create_k2_v2",
 ]
