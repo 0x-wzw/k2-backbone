@@ -28,3 +28,6 @@
 [submodule "frameworks/x-interact"]
 	path = frameworks/x-interact
 	url = https://github.com/0x-wzw/x-interact.git
+[submodule "frameworks/sentientforge"]
+	path = frameworks/sentientforge
+	url = https://github.com/0x-wzw/sentientforge.git
