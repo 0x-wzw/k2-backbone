@@ -1,0 +1,286 @@
+{
+  "plan_id": "plan_6c1adf64",
+  "task_id": "k2_mui_research_001",
+  "total_agents": 5,
+  "agents": {
+    "sub_mui_001": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_001",
+      "title": "Financial Performance Analysis",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004",
+        "sub_mui_005"
+      ],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    },
+    "sub_mui_002": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_002",
+      "title": "Shareholding Structure & Governance",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004"
+      ],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    },
+    "sub_mui_003": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_003",
+      "title": "Bursa Announcements & Corporate Actions",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_005"
+      ],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    },
+    "sub_mui_004": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_004",
+      "title": "Subsidiary Valuation & Strategic Fit",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_002"
+      ],
+      "downstream": [],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    },
+    "sub_mui_005": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_005",
+      "title": "Competitive Positioning & Market Outlook",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_003"
+      ],
+      "downstream": [],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    }
+  },
+  "handoff_contracts": {
+    "sub_mui_001": {
+      "receives": {
+        "input": {
+          "task_type": "analysis",
+          "prompt": "Analyze MUI Berhad's annual reports (2022-2024). Extract: total revenue, net profit, segment revenue breakdown (Hotels/Retail/Property/Food), debt-to-equity, operating cash flow. Compare year-over-year trends.",
+          "estimated_tokens": 15000,
+          "dependencies": []
+        },
+        "context": "upstream outputs"
+      },
+      "delivers": {
+        "result": {
+          "result": "any",
+          "metrics": "dict",
+          "references": "list",
+          "confidence": "float"
+        },
+        "format": "JSON"
+      },
+      "validation_rules": [
+        "non_empty",
+        "json_valid",
+        "has_references",
+        "min_length:100"
+      ],
+      "timeout_seconds": 300
+    },
+    "sub_mui_002": {
+      "receives": {
+        "input": {
+          "task_type": "research",
+          "prompt": "Query Bursa Malaysia for MUI Berhad shareholding changes. Identify: top shareholders, board members, independent directors ratio, any related-party transactions in last 24 months.",
+          "estimated_tokens": 12000,
+          "dependencies": []
+        },
+        "context": "upstream outputs"
+      },
+      "delivers": {
+        "result": {
+          "result": "any",
+          "metrics": "dict",
+          "references": "list",
+          "confidence": "float"
+        },
+        "format": "JSON"
+      },
+      "validation_rules": [
+        "non_empty",
+        "json_valid",
+        "has_references",
+        "min_length:100"
+      ],
+      "timeout_seconds": 300
+    },
+    "sub_mui_003": {
+      "receives": {
+        "input": {
+          "task_type": "research",
+          "prompt": "Search Bursa Malaysia announcements for MUI Berhad (code: 3891). Extract: AGM resolutions, material disposals (Corus KLCC), dividend announcements, any capital raising in last 24 months.",
+          "estimated_tokens": 10000,
+          "dependencies": []
+        },
+        "context": "upstream outputs"
+      },
+      "delivers": {
+        "result": {
+          "result": "any",
+          "metrics": "dict",
+          "references": "list",
+          "confidence": "float"
+        },
+        "format": "JSON"
+      },
+      "validation_rules": [
+        "non_empty",
+        "json_valid",
+        "has_references",
+        "min_length:100"
+      ],
+      "timeout_seconds": 300
+    },
+    "sub_mui_004": {
+      "receives": {
+        "input": {
+          "task_type": "analysis",
+          "prompt": "Value MUI subsidiaries: Corus Hotels (6 UK properties + KLCC + Port Dickson), Metrojaya (10 stores), A&W Malaysia (101 outlets), MUI Properties (Bandar Springhill 1,990 acres). Use comparable company multiples.",
+          "estimated_tokens": 18000,
+          "dependencies": [
+            "sub_mui_001",
+            "sub_mui_002"
+          ]
+        },
+        "context": "upstream outputs"
+      },
+      "delivers": {
+        "result": {
+          "result": "any",
+          "metrics": "dict",
+          "references": "list",
+          "confidence": "float"
+        },
+        "format": "JSON"
+      },
+      "validation_rules": [
+        "non_empty",
+        "json_valid",
+        "has_references",
+        "min_length:100"
+      ],
+      "timeout_seconds": 300
+    },
+    "sub_mui_005": {
+      "receives": {
+        "input": {
+          "task_type": "synthesis",
+          "prompt": "Compare MUI Berhad to Malaysian conglomerate peers (YTL Corp, Sime Darby, Berjaya Corp). Assess: market cap, diversification, KL20 ecosystem alignment. Final recommendation: HOLD/ACCUMULATE/DIVEST.",
+          "estimated_tokens": 12000,
+          "dependencies": [
+            "sub_mui_001",
+            "sub_mui_003"
+          ]
+        },
+        "context": "upstream outputs"
+      },
+      "delivers": {
+        "result": {
+          "result": "any",
+          "metrics": "dict",
+          "references": "list",
+          "confidence": "float"
+        },
+        "format": "JSON"
+      },
+      "validation_rules": [
+        "non_empty",
+        "json_valid",
+        "has_references",
+        "min_length:100"
+      ],
+      "timeout_seconds": 300
+    }
+  },
+  "dependency_graph": {
+    "sub_mui_001": {
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004",
+        "sub_mui_005"
+      ],
+      "depth": 0
+    },
+    "sub_mui_002": {
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004"
+      ],
+      "depth": 0
+    },
+    "sub_mui_003": {
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_005"
+      ],
+      "depth": 0
+    },
+    "sub_mui_004": {
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_002"
+      ],
+      "downstream": [],
+      "depth": 1
+    },
+    "sub_mui_005": {
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_003"
+      ],
+      "downstream": [],
+      "depth": 1
+    }
+  },
+  "estimated_timeline": {
+    "max_parallel_depth": 2,
+    "total_tasks": 5,
+    "estimated_seconds": 60,
+    "estimated_minutes": 1.0
+  },
+  "status": "planned",
+  "created_at": "2026-05-28T08:34:01.029338"
+}

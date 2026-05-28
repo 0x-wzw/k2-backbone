@@ -1,0 +1,184 @@
+{
+  "deployment_id": "dep_061fc477",
+  "plan_id": "plan_6c1adf64",
+  "completed": [],
+  "failed": [
+    "sub_mui_002",
+    "sub_mui_003",
+    "sub_mui_001"
+  ],
+  "agents": {
+    "sub_mui_001": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_001",
+      "title": "Financial Performance Analysis",
+      "agent_model": "unknown",
+      "status": "failed",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004",
+        "sub_mui_005"
+      ],
+      "start_time": "2026-05-28T08:34:01.029919",
+      "end_time": "2026-05-28T08:34:02.655925",
+      "duration_ms": 1626,
+      "vet_score": 0.8,
+      "retry_count": 3,
+      "has_output": true
+    },
+    "sub_mui_002": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_002",
+      "title": "Shareholding Structure & Governance",
+      "agent_model": "unknown",
+      "status": "failed",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004"
+      ],
+      "start_time": "2026-05-28T08:34:01.029926",
+      "end_time": "2026-05-28T08:34:02.654066",
+      "duration_ms": 1624,
+      "vet_score": 0.8,
+      "retry_count": 3,
+      "has_output": true
+    },
+    "sub_mui_003": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_003",
+      "title": "Bursa Announcements & Corporate Actions",
+      "agent_model": "unknown",
+      "status": "failed",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_005"
+      ],
+      "start_time": "2026-05-28T08:34:01.029928",
+      "end_time": "2026-05-28T08:34:02.653907",
+      "duration_ms": 1623,
+      "vet_score": 0.8,
+      "retry_count": 3,
+      "has_output": true
+    },
+    "sub_mui_004": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_004",
+      "title": "Subsidiary Valuation & Strategic Fit",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_002"
+      ],
+      "downstream": [],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    },
+    "sub_mui_005": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_005",
+      "title": "Competitive Positioning & Market Outlook",
+      "agent_model": "unknown",
+      "status": "planned",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_003"
+      ],
+      "downstream": [],
+      "start_time": null,
+      "end_time": null,
+      "duration_ms": 0,
+      "vet_score": 0.0,
+      "retry_count": 0,
+      "has_output": false
+    }
+  },
+  "monitoring_logs": {
+    "sub_mui_001": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:01.530469",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 500
+        }
+      },
+      {
+        "check": 2,
+        "timestamp": "2026-05-28T08:34:02.054535",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1024
+        }
+      },
+      {
+        "check": 3,
+        "timestamp": "2026-05-28T08:34:02.655958",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1626
+        }
+      }
+    ],
+    "sub_mui_002": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:01.530615",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 500
+        }
+      },
+      {
+        "check": 2,
+        "timestamp": "2026-05-28T08:34:02.047572",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1017
+        }
+      },
+      {
+        "check": 3,
+        "timestamp": "2026-05-28T08:34:02.654079",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1624
+        }
+      }
+    ],
+    "sub_mui_003": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:01.530816",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 500
+        }
+      },
+      {
+        "check": 2,
+        "timestamp": "2026-05-28T08:34:02.054458",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1019
+        }
+      },
+      {
+        "check": 3,
+        "timestamp": "2026-05-28T08:34:02.653944",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 1623
+        }
+      }
+    ],
+    "sub_mui_004": [],
+    "sub_mui_005": []
+  },
+  "status": "partial",
+  "ended_at": "2026-05-28T08:34:02.757037"
+}

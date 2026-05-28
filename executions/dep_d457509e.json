@@ -1,0 +1,156 @@
+{
+  "deployment_id": "dep_d457509e",
+  "plan_id": "plan_2b4dcf67",
+  "completed": [
+    "sub_mui_001",
+    "sub_mui_005",
+    "sub_mui_002",
+    "sub_mui_004",
+    "sub_mui_003"
+  ],
+  "failed": [],
+  "agents": {
+    "sub_mui_001": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_001",
+      "title": "Financial Performance Analysis",
+      "agent_model": "unknown",
+      "status": "approved",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004",
+        "sub_mui_005"
+      ],
+      "start_time": "2026-05-28T08:34:22.223422",
+      "end_time": "2026-05-28T08:34:22.223697",
+      "duration_ms": 0,
+      "vet_score": 1.0,
+      "retry_count": 0,
+      "has_output": true
+    },
+    "sub_mui_002": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_002",
+      "title": "Shareholding Structure & Governance",
+      "agent_model": "unknown",
+      "status": "approved",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_004"
+      ],
+      "start_time": "2026-05-28T08:34:22.223429",
+      "end_time": "2026-05-28T08:34:22.223959",
+      "duration_ms": 0,
+      "vet_score": 1.0,
+      "retry_count": 0,
+      "has_output": true
+    },
+    "sub_mui_003": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_003",
+      "title": "Bursa Announcements & Corporate Actions",
+      "agent_model": "unknown",
+      "status": "approved",
+      "dependencies": [],
+      "downstream": [
+        "sub_mui_005"
+      ],
+      "start_time": "2026-05-28T08:34:22.223431",
+      "end_time": "2026-05-28T08:34:22.223984",
+      "duration_ms": 0,
+      "vet_score": 1.0,
+      "retry_count": 0,
+      "has_output": true
+    },
+    "sub_mui_004": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_004",
+      "title": "Subsidiary Valuation & Strategic Fit",
+      "agent_model": "unknown",
+      "status": "approved",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_002"
+      ],
+      "downstream": [],
+      "start_time": "2026-05-28T08:34:22.224104",
+      "end_time": "2026-05-28T08:34:22.224455",
+      "duration_ms": 0,
+      "vet_score": 1.0,
+      "retry_count": 0,
+      "has_output": true
+    },
+    "sub_mui_005": {
+      "task_id": "k2_mui_research_001",
+      "subtask_id": "sub_mui_005",
+      "title": "Competitive Positioning & Market Outlook",
+      "agent_model": "unknown",
+      "status": "approved",
+      "dependencies": [
+        "sub_mui_001",
+        "sub_mui_003"
+      ],
+      "downstream": [],
+      "start_time": "2026-05-28T08:34:22.224164",
+      "end_time": "2026-05-28T08:34:22.224479",
+      "duration_ms": 0,
+      "vet_score": 1.0,
+      "retry_count": 0,
+      "has_output": true
+    }
+  },
+  "monitoring_logs": {
+    "sub_mui_001": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:22.223710",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 0
+        }
+      }
+    ],
+    "sub_mui_002": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:22.223970",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 0
+        }
+      }
+    ],
+    "sub_mui_003": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:22.223988",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 0
+        }
+      }
+    ],
+    "sub_mui_004": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:22.224464",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 0
+        }
+      }
+    ],
+    "sub_mui_005": [
+      {
+        "check": 1,
+        "timestamp": "2026-05-28T08:34:22.224483",
+        "status": "completed",
+        "metadata": {
+          "duration_ms": 0
+        }
+      }
+    ]
+  },
+  "status": "completed",
+  "ended_at": "2026-05-28T08:34:22.425204"
+}

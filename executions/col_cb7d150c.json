@@ -1,0 +1,26 @@
+{
+  "collection_id": "col_cb7d150c",
+  "deployment_id": "dep_061fc477",
+  "approved_count": 0,
+  "rejected_count": 3,
+  "approval_rate": 0.0,
+  "approved_outputs": {},
+  "rejected_outputs": {
+    "sub_mui_001": {
+      "status": "failed",
+      "retries": 3,
+      "error": null
+    },
+    "sub_mui_002": {
+      "status": "failed",
+      "retries": 3,
+      "error": null
+    },
+    "sub_mui_003": {
+      "status": "failed",
+      "retries": 3,
+      "error": null
+    }
+  },
+  "collected_at": "2026-05-28T08:34:02.758598"
+}
