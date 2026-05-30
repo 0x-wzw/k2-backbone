@@ -37,6 +37,9 @@ all = [
 [project.scripts]
 k2 = "k2_backbone.core.cli:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["k2_backbone"]
+
 [project.urls]
 Homepage = "https://github.com/0x-wzw/k2-backbone"
 Documentation = "https://github.com/0x-wzw/k2-backbone/tree/main/docs"
