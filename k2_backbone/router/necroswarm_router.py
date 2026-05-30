@@ -309,39 +309,6 @@ class NecroSwarmRouter:
         return winner, probs, confidence, strategy
 
     def route(self, task_spec: dict) -> dict:
-
-        budget = task_spec.get("budget", {}).get("max_usd", 10.0)
-        total_estimated = sum((s.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(s.get("assigned_model", ""), 1.0) for s in routed_spec.get("subtasks", []))
-        
-        # Budget enforcement: downgrade expensive tasks if over budget
-        if total_estimated > budget and budget > 0:
-            logger.warning(f"Budget exceeded: ${total_estimated:.2f} > ${budget:.2f}. Applying fallback.")
-            for st in sorted(routed_spec["subtasks"], key=lambda x: COST_PER_1K.get(x.get("assigned_model", ""), 0), reverse=True):
-                current_model = st.get("assigned_model", "")
-                current_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(current_model, 0)
-                task_type = st.get("type", "")
-                candidates = self._get_candidates(task_type)
-                for fallback in sorted(candidates, key=lambda m: COST_PER_1K.get(m, 999)):
-                    if fallback == current_model:
-                        continue
-                    fallback_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(fallback, 0)
-                    if fallback_cost < current_cost:
-                        st["assigned_model"] = fallback
-                        total_estimated -= (current_cost - fallback_cost)
-                        break
-                if total_estimated <= budget:
-                    break
-            
-            routed_spec["routing"]["total_estimated_cost_usd"] = total_estimated
-            routed_spec["routing"]["budget_enforced"] = True
-            routed_spec["routing"]["original_cost"] = routed_spec["routing"].get("total_estimated_cost_usd", 0)
-
-    # Update budget allocations
-    for s in routed_spec["subtasks"]:
-        tokens = s.get("estimated_tokens", 0)
-        model = s.get("assigned_model", "")
-        cost = (tokens / 1000) * COST_PER_1K.get(model, 1.0)
-        s["budget_allocation"] = cost / budget if budget > 0 else 0
         """
         Route all subtasks in a TaskSpec through the council.
 
@@ -367,7 +334,6 @@ class NecroSwarmRouter:
 
             # Budget check: if over budget, reroute to cheaper model
             if self.cost_budget and total_estimated > self.cost_budget:
-                # Find cheapest candidate
                 cheapest = min(scores.keys(), key=lambda c: COST_PER_1K.get(c, 999))
                 if cheapest != winner:
                     winner = cheapest
@@ -378,7 +344,6 @@ class NecroSwarmRouter:
             member = next((m for m in self.members if m.id == winner), None)
             model_str = member.model if member else winner
 
-            # Assign to subtask
             subtask["assigned_model"] = model_str
             subtask["budget_allocation"] = estimated_cost / budget if budget > 0 else 0
 
@@ -393,7 +358,28 @@ class NecroSwarmRouter:
             )
             routing_log.append(decision.to_dict())
 
-        # Add routing metadata
+        # Budget enforcement: downgrade most expensive subtasks if still over budget
+        if total_estimated > budget and budget > 0:
+            for st in sorted(subtasks, key=lambda x: COST_PER_1K.get(x.get("assigned_model", ""), 0), reverse=True):
+                current_model = st.get("assigned_model", "")
+                current_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(current_model, 0)
+                for fallback in sorted(self._get_candidates(st.get("type", "")), key=lambda m: COST_PER_1K.get(m, 999)):
+                    if fallback == current_model:
+                        continue
+                    fallback_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(fallback, 0)
+                    if fallback_cost < current_cost:
+                        st["assigned_model"] = fallback
+                        total_estimated -= (current_cost - fallback_cost)
+                        break
+                if total_estimated <= budget:
+                    break
+
+        # Update budget allocations with final model assignments
+        for s in subtasks:
+            tokens = s.get("estimated_tokens", 0)
+            cost = (tokens / 1000) * COST_PER_1K.get(s.get("assigned_model", ""), 1.0)
+            s["budget_allocation"] = cost / budget if budget > 0 else 0
+
         spec["routing"] = {
             "method": self.vote_method.value,
             "timestamp": datetime.now().isoformat(),
