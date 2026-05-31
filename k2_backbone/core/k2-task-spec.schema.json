@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://0x-wzw.dev/schemas/k2-task-spec.schema.json",
+  "title": "K2BackboneTaskSpec",
+  "description": "Task specification produced by K2.6 decomposer and consumed by 0x-wzw swarm stack",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "title",
+    "description",
+    "objective",
+    "acceptance_criteria",
+    "risk_level",
+    "budget",
+    "subtasks"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Unique task identifier",
+      "pattern": "^k2_[0-9]{13}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10
+    },
+    "context": {
+      "type": "string",
+      "description": "Additional context, attachments, or reference material"
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_usd", "max_input_tokens", "max_output_tokens", "currency"],
+      "properties": {
+        "max_usd": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 1000
+        },
+        "max_input_tokens": {
+          "type": "integer",
+          "minimum": 256,
+          "maximum": 200000
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 128,
+          "maximum": 200000
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["USD", "CNY"],
+          "default": "USD"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["cost", "speed", "quality", "balanced"],
+          "default": "balanced"
+        }
+      }
+    },
+    "decomposition": {
+      "type": "object",
+      "description": "Metadata about the K2.6 decomposition process",
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": ["kimi-k2.6", "kimi-k2.5"]
+        },
+        "estimated_subagents": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "decomposition_strategy": {
+          "type": "string",
+          "enum": ["heterogeneous", "uniform", "hybrid"]
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "subtasks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 300,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "type",
+          "dependencies",
+          "estimated_tokens",
+          "success_criteria"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^sub_[0-9]{3}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "research",
+              "code_generation",
+              "code_review",
+              "testing",
+              "documentation",
+              "analysis",
+              "writing",
+              "synthesis",
+              "optimization",
+              "data_processing",
+              "visualization",
+              "integration"
+            ]
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^sub_[0-9]{3}$"
+            }
+          },
+          "estimated_tokens": {
+            "type": "integer",
+            "minimum": 128,
+            "maximum": 200000
+          },
+          "estimated_duration_ms": {
+            "type": "integer",
+            "description": "Estimated execution time in milliseconds"
+          },
+          "success_criteria": {
+            "type": "string",
+            "minLength": 10
+          },
+          "assigned_model": {
+            "type": "string",
+            "description": "Model ID assigned by router (filled at runtime)",
+            "enum": [
+              "kimi-k2.6",
+              "kimi-k2.5",
+              "gpt-4o",
+              "gpt-4o-mini",
+              "claude-sonnet-4",
+              "claude-haiku-4",
+              "gemini-2.5-pro",
+              "gemini-2.5-flash",
+              "deepseek-v3",
+              "qwen3-72b",
+              "local-llama-70b",
+              "human"
+            ]
+          },
+          "budget_allocation": {
+            "type": "number",
+            "description": "Percentage of parent task budget allocated",
+            "minimum": 0.01,
+            "maximum": 1.0
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["text", "json", "markdown", "code", "file", "table", "diagram"]
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "default": "1.0.0"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["k2.6_decomposer", "manual", "template"]
+        }
+      }
+    }
+  }
+}
