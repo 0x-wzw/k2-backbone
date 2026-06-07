@@ -1,0 +1,53 @@
+{
+  "id": "k2-backbone",
+  "name": "K2-Backbone",
+  "description": "Kimi K2.6 Production Backbone — decompose, route, execute, compress",
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "pythonPath": {
+        "type": "string",
+        "default": "python3",
+        "description": "Python interpreter path"
+      },
+      "k2Path": {
+        "type": "string",
+        "default": "/home/ubuntu/.openclaw/workspace/k2-backbone",
+        "description": "Path to k2-backbone repo"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "k2_decompose",
+      "description": "Decompose a complex task into structured subtasks using K2.6. Returns a JSON TaskSpec.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "The complex task to decompose"
+          }
+        },
+        "required": ["task"]
+      }
+    },
+    {
+      "name": "k2_execute",
+      "description": "Execute a TaskSpec JSON through the K2 pipeline (route + execute + compress).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "spec_path": {
+            "type": "string",
+            "description": "Path to the TaskSpec JSON file"
+          }
+        },
+        "required": ["spec_path"]
+      }
+    }
+  ]
+}

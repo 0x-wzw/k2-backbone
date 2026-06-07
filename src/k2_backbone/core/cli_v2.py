@@ -17,8 +17,6 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from k2_backbone.decomposer.k2_decomposer import K2Decomposer
 from k2_backbone.router.necroswarm_router import NecroSwarmRouter, VoteMethod
 from k2_backbone.executor.neuroswarm_integration import NeuroSwarmIntegratedExecutor
