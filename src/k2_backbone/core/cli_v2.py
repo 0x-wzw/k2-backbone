@@ -13,6 +13,7 @@ Usage:
 """
 
 import json
+from typing import Optional
 import os
 import sys
 from pathlib import Path
