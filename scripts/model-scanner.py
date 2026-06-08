@@ -437,18 +437,19 @@ def scan(do_commit: bool = False, do_push: bool = True) -> dict[str, Any]:
     }
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
-    # Git commit + push
+    # Git commit + push to the standalone model-routing-table repo
     if do_commit:
+        table_repo = K2_ROOT.parent / "model-routing-table"
         try:
-            subprocess.run(["git", "add", "-A"], cwd=K2_ROOT, check=True, capture_output=True)
+            subprocess.run(["git", "add", "-A"], cwd=table_repo, check=True, capture_output=True)
             date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             change_summary = "; ".join(f"{d}: {o}→{n}" for d, o, n, _ in changes)
-            msg = f"chore: auto-update dimension map ({date_str})\n\n{change_summary}"
-            subprocess.run(["git", "commit", "-m", msg], cwd=K2_ROOT, check=True, capture_output=True)
+            msg = f"chore: auto-update routing table ({date_str})\n\n{change_summary}"
+            subprocess.run(["git", "commit", "-m", msg], cwd=table_repo, check=True, capture_output=True)
 
             if do_push:
-                subprocess.run(["git", "push", "origin", "main"], cwd=K2_ROOT, check=True, capture_output=True)
-                log("🚀 Pushed to GitHub")
+                subprocess.run(["git", "push", "origin", "main"], cwd=table_repo, check=True, capture_output=True)
+                log("🚀 Pushed model-routing-table to GitHub")
         except subprocess.CalledProcessError as e:
             log(f"⚠️  Git error: {e.stderr.decode()}")
 
