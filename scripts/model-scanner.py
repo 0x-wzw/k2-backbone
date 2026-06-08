@@ -27,7 +27,7 @@ from urllib.request import Request, urlopen
 # ── Paths ──────────────────────────────────────────────────────────────
 
 K2_ROOT = Path(__file__).resolve().parent.parent
-DIMENSION_MAP_PATH = K2_ROOT / "frameworks" / "neuroswarm" / "neuroswarm" / "swarm" / "dimension_map.py"
+DIMENSION_MAP_PATH = K2_ROOT.parent / "model-routing-table" / "model_routing_table" / "table.py"
 STATE_FILE = K2_ROOT / ".model-scanner-state.json"
 LOG_FILE = Path.home() / ".k2-model-scanner.log"
 

@@ -1,14 +1,6 @@
-"""K2-Backbone Router — imports the 10-D dimension map as single source of truth."""
+"""K2-Backbone Router — imports from model-routing-table as single source of truth."""
 
-import sys
-from pathlib import Path
-
-# Ensure the NeuroSwarm framework is importable
-_neuroswarm_path = Path(__file__).parent.parent.parent / "frameworks" / "neuroswarm"
-if str(_neuroswarm_path) not in sys.path:
-    sys.path.insert(0, str(_neuroswarm_path))
-
-from neuroswarm.swarm.dimension_map import (
+from model_routing_table import (
     DIMENSION_MAP,
     DIMENSION_FALLBACK,
     DIMENSION_DESCRIPTIONS,

@@ -154,7 +154,7 @@ class ScoutForgeAdapter:
         self._ensure_initialized()
         
         # Load current router config
-        from k2_backbone.router.necroswarm_router_v2 import OLLAMA_CLOUD_MODELS, TASK_TYPE_TO_MODEL
+        from model_routing_table.table import OLLAMA_CLOUD_MODELS, TASK_TYPE_TO_MODEL
         
         updates = []
         
