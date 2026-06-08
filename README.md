@@ -251,3 +251,15 @@ MIT — same as all 0x-wzw frameworks.
 ---
 
 *Built by the Undead Collective. K2.6 feeds the swarm. The swarm remembers.*
+
+---
+
+## Related Repositories
+
+| Repository | Purpose |
+|------------|---------|
+| [**agentic-workforce**](https://github.com/0x-wzw/agentic-workforce) | Multi-agent orchestration protocols — message envelopes, boundary enforcement, convergence detection, resolver system |
+| [neuroswarm](https://github.com/0x-wzw/neuroswarm) | Parallel swarm execution engine |
+| [october-swarm-skills](https://github.com/0x-wzw/october-swarm-skills) | Tiered agent architecture (T1-T4) and 4-stage workflows |
+| [model-routing-table](https://github.com/0x-wzw/model-routing-table) | Cost-optimized model routing via 10-D Council |
+| [obliviarch](https://github.com/0x-wzw/obliviarch) | Multi-level memory compression |
