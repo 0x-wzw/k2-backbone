@@ -68,3 +68,4 @@ integrated_result.json
 *.trace.json
 schema_cache/
 executions/
+.model-scanner-state.json
