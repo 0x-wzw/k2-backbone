@@ -1,125 +1,125 @@
-from __future__ import annotations
-"""
-NecroSwarm Router Adapter for K2-Backbone
+"""NecroSwarm Router Adapter for K2-Backbone — Single Source of Truth via dimension_map.py
 
 Maps TaskSpec subtasks to council members via weighted voting.
 Core logic: Borda voting with cost-aware fallback.
 
-Usage:
-    python -m k2_backbone.router.necroswarm_router --spec task_spec.json
+Updated 2026-06-08: model definitions imported from neuroswarm/swarm/dimension_map.py.
+All model changes go in dimension_map.py — this file reads from there.
 """
 
+from __future__ import annotations
+
 import json
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
+import sys
+_neuroswarm_path = Path(__file__).parent.parent.parent / "frameworks" / "neuroswarm"
+if str(_neuroswarm_path) not in sys.path:
+    sys.path.insert(0, str(_neuroswarm_path))
 
-# ── Constants ───────────────────────────────────────────────────────
+from neuroswarm.swarm.dimension_map import (
+    DIMENSION_MAP,
+    DIMENSION_FALLBACK,
+    DIMENSION_DESCRIPTIONS,
+)
 
-COUNCIL_CONFIG = Path(__file__).parent.parent.parent / "frameworks" / "necroswarm" / "backend" / "app" / "config" / "council-members.json"
 
-SUBTASK_TYPE_TO_SPECIALIZATION = {
-    "research":        ["qwen3.5-122b", "gemma4-31b", "deepseek-v3.2"],
-    "code_generation": ["glm-5.1", "deepseek-v3.2", "qwen3-coder-next"],
-    "code_review":     ["devstral-small-2", "glm-5.1", "gemma4-31b"],
-    "testing":         ["qwen3.5-122b", "gemma4-31b", "devstral-small-2"],
-    "documentation":   ["qwen3.5-122b", "gemma4-31b", "kimi-k2.6"],
-    "analysis":        ["qwen3.5-122b", "deepseek-v3.2", "gemma4-31b"],
-    "writing":         ["qwen3.5-122b", "gemma4-31b", "deepseek-v3.2"],
-    "synthesis":       ["qwen3.5-122b", "kimi-k2.6", "deepseek-v3.2"],
-    "optimization":    ["glm-5.1", "deepseek-v3.2", "qwen3.5-122b"],
-    "data_processing": ["deepseek-v3.2", "nemotron-3-super", "gemma4-31b"],
-    "visualization":   ["gemma4-31b", "kimi-k2.6", "qwen3.5-122b"],
-    "integration":     ["kimi-k2.6", "nemotron-3-super", "deepseek-v3.2"],
+# ── Single source of truth: derived from dimension_map ──────────────
+
+# Map every model appearing in DIMENSION_MAP + DIMENSION_FALLBACK → cost
+# Approximate cost per 1K output tokens (USD)
+MODEL_COST_USD = {
+    "kimi-k2.6:cloud":         3.00,
+    "qwen3.5:122b:cloud":      4.00,
+    "glm-5.1:cloud":           5.00,
+    "qwen3-vl:235b:cloud":     4.00,
+    "qwen3.5:397b:cloud":      6.00,
+    "gemma4:26b:cloud":        1.50,
+    "deepseek-v4-flash:cloud": 0.60,
+    "nemotron-3-ultra:cloud":  1.20,
+    "minimax-m3:cloud":        2.50,
+    "deepseek-v4-pro:cloud":   2.50,
+    # Fallback references
+    "gemma4:12b:cloud":        0.40,
+    "qwen3.5:9b:cloud":        0.20,
+    "nemotron-3-nano:cloud":   0.10,
 }
 
-# Cost per 1K tokens (output), approximate USD - Ollama Cloud
-# These are per-1K-token rates (not per-token)
-COST_PER_1K = {
-    "glm-5.1":           5.00,    # T0 Premium - SWE SOTA ($5/1M = $0.005/1K)
-    "qwen3.5-122b":      4.00,    # T0 Premium - Reasoning king
-    "kimi-k2.6":         3.00,    # T1 - Agentic orchestration
-    "deepseek-v3.2":     2.00,    # T1 - Balanced performer
-    "gemma4-31b":        1.50,    # T1 - Multimodal
-    "nemotron-3-super":  1.20,    # T2 - Multi-agent efficiency
-    "devstral-small-2":  1.00,    # T2 - SWE specialist
-    "glm-5":             1.80,    # T2 - Complex systems
-    "deepseek-v4-pro":   2.50,    # T2 - Frontier reasoning
-    "deepseek-v4-flash": 0.60,    # T3 - Budget long-context
-    "gemini-3-flash":    0.50,    # T3 - Speed
-    "qwen3-coder-next":  0.80,    # T3 - Coding workflows
-    "minimax-m2.7":    1.00,    # T3 - Coding + agentic
-    "nemotron-3-nano":   0.10,    # T4 - Ultra-cheap fallback
-    "gemma4-e2b":        0.08,    # T4 - Edge
-    "qwen3.5-0.8b":      0.05,    # T4 - Ultra-small
-    "kimi":              3.00,    # Legacy compat
-    "claude":            3.75,    # Legacy compat
-    "deepseek":          0.50,    # Legacy compat
-    "glm":               0.30,    # Legacy compat
-    "qwen":              0.10,    # Legacy compat
-}
-
-# Capability scores (0-10) per task type - Ollama Cloud best-in-class
+# Capability scores (0-10) per task family — micro-tuned per dimension_map model
 CAPABILITY_MATRIX = {
-    "kimi-k2.6": {
+    "kimi-k2.6:cloud": {
         "research": 7, "code": 7, "analysis": 8, "writing": 7,
-        "optimization": 7, "orchestration": 10, "integration": 9
+        "optimization": 7, "orchestration": 10, "integration": 9,
     },
-    "glm-5.1": {
-        "research": 6, "code": 10, "analysis": 8, "writing": 6,
-        "optimization": 9, "orchestration": 5, "integration": 5
-    },
-    "qwen3.5-122b": {
+    "qwen3.5:122b:cloud": {
         "research": 10, "code": 9, "analysis": 10, "writing": 8,
-        "optimization": 8, "orchestration": 6, "integration": 5
+        "optimization": 8, "orchestration": 6, "integration": 5,
     },
-    "deepseek-v3.2": {
-        "research": 8, "code": 9, "analysis": 9, "writing": 7,
-        "optimization": 8, "orchestration": 6, "integration": 6
+    "glm-5.1:cloud": {
+        "research": 6, "code": 10, "analysis": 8, "writing": 6,
+        "optimization": 9, "orchestration": 5, "integration": 5,
     },
-    "gemma4-31b": {
+    "qwen3-vl:235b:cloud": {
+        "research": 4, "code": 5, "analysis": 5, "writing": 4,
+        "optimization": 3, "orchestration": 3, "integration": 3,
+    },
+    "qwen3.5:397b:cloud": {
+        "research": 10, "code": 8, "analysis": 10, "writing": 9,
+        "optimization": 9, "orchestration": 7, "integration": 6,
+    },
+    "gemma4:26b:cloud": {
         "research": 8, "code": 8, "analysis": 8, "writing": 7,
-        "optimization": 7, "orchestration": 5, "integration": 5
+        "optimization": 7, "orchestration": 5, "integration": 5,
     },
-    "nemotron-3-super": {
-        "research": 6, "code": 5, "analysis": 7, "writing": 5,
-        "optimization": 5, "orchestration": 8, "integration": 7
-    },
-    "devstral-small-2": {
-        "research": 4, "code": 8, "analysis": 5, "writing": 4,
-        "optimization": 4, "orchestration": 3, "integration": 3
-    },
-    "deepseek-v4-flash": {
+    "deepseek-v4-flash:cloud": {
         "research": 6, "code": 7, "analysis": 7, "writing": 5,
-        "optimization": 6, "orchestration": 4, "integration": 4
+        "optimization": 6, "orchestration": 4, "integration": 4,
     },
-    "gemini-3-flash": {
-        "research": 5, "code": 6, "analysis": 6, "writing": 5,
-        "optimization": 5, "orchestration": 4, "integration": 4
+    "nemotron-3-ultra:cloud": {
+        "research": 6, "code": 5, "analysis": 7, "writing": 5,
+        "optimization": 5, "orchestration": 8, "integration": 7,
     },
-    "qwen3-coder-next": {
-        "research": 4, "code": 9, "analysis": 5, "writing": 4,
-        "optimization": 5, "orchestration": 3, "integration": 3
+    "minimax-m3:cloud": {
+        "research": 9, "code": 8, "analysis": 7, "writing": 8,
+        "optimization": 7, "orchestration": 6, "integration": 6,
     },
-    "minimax-m2.7": {
-        "research": 5, "code": 7, "analysis": 5, "writing": 5,
-        "optimization": 5, "orchestration": 5, "integration": 4
+    "deepseek-v4-pro:cloud": {
+        "research": 9, "code": 8, "analysis": 9, "writing": 7,
+        "optimization": 8, "orchestration": 6, "integration": 5,
     },
-    "nemotron-3-nano": {
-        "research": 3, "code": 4, "analysis": 4, "writing": 3,
-        "optimization": 3, "orchestration": 3, "integration": 3
-    },
-    # Legacy compatibility
-    "kimi":      {"research": 9, "code": 9, "analysis": 10, "writing": 8, "optimization": 9},
-    "claude":    {"research": 7, "code": 10, "analysis": 8, "writing": 10, "optimization": 8},
-    "deepseek":  {"research": 10, "code": 8, "analysis": 9, "writing": 7, "optimization": 8},
-    "glm":       {"research": 7, "code": 6, "analysis": 7, "writing": 7, "optimization": 6},
-    "qwen":      {"research": 5, "code": 6, "analysis": 5, "writing": 5, "optimization": 6},
+    # Fallback fallbacks
+    "gemma4:12b:cloud":  {"research": 5, "code": 6, "analysis": 6, "writing": 4, "optimization": 5, "orchestration": 3, "integration": 3},
+    "qwen3.5:9b:cloud":  {"research": 5, "code": 5, "analysis": 6, "writing": 4, "optimization": 4, "orchestration": 3, "integration": 3},
+    "nemotron-3-nano:cloud": {"research": 3, "code": 4, "analysis": 4, "writing": 3, "optimization": 3, "orchestration": 3, "integration": 3},
 }
+
+# Build SUBTASK_TYPE_TO_SPECIALIZATION from dimension_map
+# Each dimension description maps to subtask types
+_DIM_TO_TASK = {
+    "D1_synthesis":    ["synthesis", "integration"],
+    "D2_deep_reason":  ["research", "analysis"],
+    "D3_code":         ["code_generation", "code_review", "testing", "optimization"],
+    "D4_vision":       ["visualization"],
+    "D5_strategy":     ["planning", "architecture", "writing"],
+    "D6_analysis":     ["analysis", "data_processing"],
+    "D7_general":      ["documentation", "writing"],
+    "D8_verification": ["code_review", "testing"],
+    "D9_research":     ["research", "synthesis"],
+    "D10_think":       ["planning", "architecture"],
+}
+
+SUBTASK_TYPE_TO_SPECIALIZATION: dict[str, list[str]] = {}
+for _dim, _tasks in _DIM_TO_TASK.items():
+    _model = DIMENSION_MAP.get(_dim)
+    if _model:
+        for _t in _tasks:
+            if _t not in SUBTASK_TYPE_TO_SPECIALIZATION:
+                _fallbacks = DIMENSION_FALLBACK.get(_dim, [])
+                SUBTASK_TYPE_TO_SPECIALIZATION[_t] = [_model] + _fallbacks
 
 
 # ── Data classes ──────────────────────────────────────────────────────
@@ -189,64 +189,68 @@ class NecroSwarmRouter:
         vote_method: VoteMethod = VoteMethod.BORDA,
         cost_budget_usd: Optional[float] = None,
     ):
-        self.config_path = config_path or COUNCIL_CONFIG
+        self.config_path = config_path or Path(
+            __file__).parent.parent.parent / "frameworks" / "necroswarm" / "backend" / "app" / "config" / "council-members.json"
         self.vote_method = vote_method
         self.cost_budget = cost_budget_usd
         self.members = self._load_members()
 
     def _load_members(self) -> list[CouncilMember]:
-        """Load council members from NecroSwarm config."""
-        if not self.config_path.exists():
-            # Fallback to hardcoded if submodule not present
-            return [
-                CouncilMember("kimi", "Kimi K2.6", "kimi-k2.6", "T1", 3, 1.0),
-                CouncilMember("claude", "Claude Opus", "claude-opus-4", "T1", 3, 1.0),
-                CouncilMember("deepseek", "DeepSeek V3.2", "deepseek-v3.2", "T2", 2, 0.8),
-                CouncilMember("glm", "GLM-5", "glm-5", "T2", 2, 0.8),
-                CouncilMember("qwen", "Qwen 2.5", "qwen2.5", "T3", 1, 0.5),
-            ]
-
-        with open(self.config_path) as f:
-            config = json.load(f)
-
+        """Load council members from dimension_map (single source of truth)."""
+        # Build members from DIMENSION_MAP
         members = []
-        for category in ["cognitive_leads", "research_synthesizers", "execution_specialists"]:
-            for m in config["council_members"].get(category, []):
-                members.append(CouncilMember.from_config(m))
+        for dim, model_id in DIMENSION_MAP.items():
+            desc = DIMENSION_DESCRIPTIONS.get(dim, "")
+            tier = "T1"
+            vote_power = 2
+            weight = 0.8
+            if dim in ("D1_synthesis", "D10_think"):
+                tier = "T0"
+                vote_power = 3
+                weight = 1.0
+            elif dim == "D7_general":
+                tier = "T2"
+                vote_power = 1
+                weight = 0.6
+            members.append(CouncilMember(
+                id=model_id,
+                name=model_id.split(":")[0],
+                model=model_id,
+                tier=tier,
+                vote_power=vote_power,
+                weight=weight,
+                specialties=[desc],
+            ))
         return members
 
     def _get_candidates(self, subtask_type: str) -> list[str]:
         """Get candidate members for a subtask type."""
-        return SUBTASK_TYPE_TO_SPECIALIZATION.get(subtask_type, ["kimi", "claude", "deepseek"])
+        candidates = SUBTASK_TYPE_TO_SPECIALIZATION.get(subtask_type, [])
+        if not candidates:
+            # Fallback: use all dimension map models
+            candidates = list(DIMENSION_MAP.values())
+        return candidates
 
     def _score_borda(self, subtask: dict, candidates: list[str]) -> dict[str, float]:
-        """
-        Borda count: rank candidates, assign points by position.
-        Lower rank = more points.
-        """
+        """Borda count: rank candidates by composite capability/cost/tier score."""
         scores = {}
         subtask_type = subtask.get("type", "analysis")
-        task_family = subtask_type.split("_")[0]  # e.g. "code_generation" → "code"
+        task_family = subtask_type.split("_")[0]
 
-        # Score each candidate on multiple dimensions
         ranked = []
         for cid in candidates:
             cap = CAPABILITY_MATRIX.get(cid, {})
             capability = cap.get(task_family, cap.get("analysis", 5))
-            cost = COST_PER_1K.get(cid, 1.0)
+            cost = MODEL_COST_USD.get(cid, 1.0)
             member = next((m for m in self.members if m.id == cid), None)
             vote_power = member.vote_power if member else 1
             tier_weight = member.weight if member else 0.5
 
-            # Composite score: capability * tier * 1/cost (normalized)
             cost_score = 1.0 / (cost + 0.01)
             composite = (capability * tier_weight * cost_score) / (vote_power ** 0.5)
             ranked.append((cid, composite))
 
-        # Sort by composite score descending
         ranked.sort(key=lambda x: x[1], reverse=True)
-
-        # Borda points: first gets N points, second gets N-1, etc.
         n = len(ranked)
         for i, (cid, _) in enumerate(ranked):
             scores[cid] = n - i
@@ -254,15 +258,13 @@ class NecroSwarmRouter:
         return scores
 
     def _score_cost_first(self, subtask: dict, candidates: list[str]) -> dict[str, float]:
-        """Prioritize cheapest model that can handle the task."""
-        scores = {}
+        """Prioritize cheapest model."""
         estimated_tokens = subtask.get("estimated_tokens", 4096)
-
+        scores = {}
         for cid in candidates:
-            cost_1k = COST_PER_1K.get(cid, 1.0)
+            cost_1k = MODEL_COST_USD.get(cid, 1.0)
             estimated_cost = (estimated_tokens / 1000) * cost_1k
             scores[cid] = 1.0 / (estimated_cost + 0.001)
-
         return scores
 
     def _score_quality_first(self, subtask: dict, candidates: list[str]) -> dict[str, float]:
@@ -270,22 +272,14 @@ class NecroSwarmRouter:
         scores = {}
         subtask_type = subtask.get("type", "analysis")
         task_family = subtask_type.split("_")[0]
-
         for cid in candidates:
             cap = CAPABILITY_MATRIX.get(cid, {})
             scores[cid] = cap.get(task_family, cap.get("analysis", 5))
-
         return scores
 
     def _vote(self, subtask: dict) -> tuple[str, dict, float, str]:
-        """
-        Run council vote for a subtask.
-
-        Returns: (winner_id, full_scores, confidence, strategy)
-        """
         candidates = self._get_candidates(subtask.get("type", "analysis"))
 
-        # Select scoring method
         if self.vote_method == VoteMethod.COST_FIRST:
             scores = self._score_cost_first(subtask, candidates)
             strategy = "cost_first"
@@ -296,25 +290,18 @@ class NecroSwarmRouter:
             scores = self._score_borda(subtask, candidates)
             strategy = "borda_composite"
 
-        # Normalize scores to probabilities
         total = sum(scores.values())
         if total == 0:
             total = 1
         probs = {k: v / total for k, v in scores.items()}
 
-        # Winner
         winner = max(probs, key=probs.get)
         confidence = probs[winner]
-
         return winner, probs, confidence, strategy
 
     def route(self, task_spec: dict) -> dict:
-        """
-        Route all subtasks in a TaskSpec through the council.
-
-        Returns: TaskSpec enriched with `assigned_model` on each subtask.
-        """
-        spec = dict(task_spec)  # Shallow copy
+        """Route all subtasks through the council. Returns TaskSpec enriched with assigned_model."""
+        spec = dict(task_spec)
         subtasks = spec.get("subtasks", [])
         budget = spec.get("budget", {}).get("max_usd", 10.0)
         total_estimated = 0.0
@@ -324,32 +311,25 @@ class NecroSwarmRouter:
             st_id = subtask["id"]
             estimated_tokens = subtask.get("estimated_tokens", 4096)
 
-            # Run council vote
             winner, scores, confidence, strategy = self._vote(subtask)
 
-            # Calculate estimated cost
-            cost_1k = COST_PER_1K.get(winner, 1.0)
+            cost_1k = MODEL_COST_USD.get(winner, 1.0)
             estimated_cost = (estimated_tokens / 1000) * cost_1k
             total_estimated += estimated_cost
 
-            # Budget check: if over budget, reroute to cheaper model
             if self.cost_budget and total_estimated > self.cost_budget:
-                cheapest = min(scores.keys(), key=lambda c: COST_PER_1K.get(c, 999))
+                cheapest = min(scores.keys(), key=lambda c: MODEL_COST_USD.get(c, 999))
                 if cheapest != winner:
                     winner = cheapest
-                    estimated_cost = (estimated_tokens / 1000) * COST_PER_1K.get(winner, 1.0)
+                    estimated_cost = (estimated_tokens / 1000) * MODEL_COST_USD.get(winner, 1.0)
                     strategy += "_budget_fallback"
 
-            # Map winner to model string
-            member = next((m for m in self.members if m.id == winner), None)
-            model_str = member.model if member else winner
-
-            subtask["assigned_model"] = model_str
+            subtask["assigned_model"] = winner
             subtask["budget_allocation"] = estimated_cost / budget if budget > 0 else 0
 
             decision = RoutingDecision(
                 subtask_id=st_id,
-                assigned_model=model_str,
+                assigned_model=winner,
                 council_vote=scores,
                 estimated_cost_usd=round(estimated_cost, 4),
                 confidence=round(confidence, 4),
@@ -358,15 +338,14 @@ class NecroSwarmRouter:
             )
             routing_log.append(decision.to_dict())
 
-        # Budget enforcement: downgrade most expensive subtasks if still over budget
         if total_estimated > budget and budget > 0:
-            for st in sorted(subtasks, key=lambda x: COST_PER_1K.get(x.get("assigned_model", ""), 0), reverse=True):
+            for st in sorted(subtasks, key=lambda x: MODEL_COST_USD.get(x.get("assigned_model", ""), 0), reverse=True):
                 current_model = st.get("assigned_model", "")
-                current_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(current_model, 0)
-                for fallback in sorted(self._get_candidates(st.get("type", "")), key=lambda m: COST_PER_1K.get(m, 999)):
+                current_cost = (st.get("estimated_tokens", 0) / 1000) * MODEL_COST_USD.get(current_model, 0)
+                for fallback in sorted(self._get_candidates(st.get("type", "")), key=lambda m: MODEL_COST_USD.get(m, 999)):
                     if fallback == current_model:
                         continue
-                    fallback_cost = (st.get("estimated_tokens", 0) / 1000) * COST_PER_1K.get(fallback, 0)
+                    fallback_cost = (st.get("estimated_tokens", 0) / 1000) * MODEL_COST_USD.get(fallback, 0)
                     if fallback_cost < current_cost:
                         st["assigned_model"] = fallback
                         total_estimated -= (current_cost - fallback_cost)
@@ -374,10 +353,9 @@ class NecroSwarmRouter:
                 if total_estimated <= budget:
                     break
 
-        # Update budget allocations with final model assignments
         for s in subtasks:
             tokens = s.get("estimated_tokens", 0)
-            cost = (tokens / 1000) * COST_PER_1K.get(s.get("assigned_model", ""), 1.0)
+            cost = (tokens / 1000) * MODEL_COST_USD.get(s.get("assigned_model", ""), 1.0)
             s["budget_allocation"] = cost / budget if budget > 0 else 0
 
         spec["routing"] = {
@@ -391,12 +369,8 @@ class NecroSwarmRouter:
         return spec
 
     def get_audit_log(self) -> list[dict]:
-        """Return last routing decisions for audit."""
-        # In production: persist to append-only log
         return []
 
-
-# ── CLI ───────────────────────────────────────────────────────────────
 
 def main():
     import argparse
@@ -408,22 +382,18 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("routed_spec.json"))
     args = parser.parse_args()
 
-    # Load spec
     with open(args.spec) as f:
         spec = json.load(f)
 
-    # Route
     router = NecroSwarmRouter(
         vote_method=VoteMethod(args.method),
         cost_budget_usd=args.budget,
     )
     routed = router.route(spec)
 
-    # Save
     with open(args.output, "w") as f:
         json.dump(routed, f, indent=2, ensure_ascii=False)
 
-    # Summary
     print(f"✅ Routed {len(routed['subtasks'])} subtasks")
     print(f"   Method: {args.method}")
     print(f"   Estimated cost: ${routed['routing']['total_estimated_cost_usd']}")

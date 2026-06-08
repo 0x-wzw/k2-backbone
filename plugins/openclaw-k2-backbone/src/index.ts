@@ -144,11 +144,11 @@ print(result)
 import sys
 sys.path.insert(0, 'src')
 import json
-from k2_backbone.router.council_router import CouncilRouter
-cr = CouncilRouter()
+from k2_backbone.router.necroswarm_router import NecroSwarmRouter, VoteMethod
+cr = NecroSwarmRouter(vote_method=VoteMethod('${routerMode}'))
 with open('${spec_path}') as f:
     spec = json.load(f)
-plan = cr.route(spec, mode='${routerMode}')
+plan = cr.route(spec)
 print(json.dumps(plan, indent=2))
 "`,
             { timeout: 120000, encoding: "utf-8" },
