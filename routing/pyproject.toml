@@ -1,0 +1,10 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "model-routing-table"
+version = "1.0.0"
+description = "Single source of truth for K2 Swarm model routing — 10-D council assignments, cost tables, capability matrices"
+requires-python = ">=3.10"
+license = {text = "MIT"}
