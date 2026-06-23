@@ -28,22 +28,24 @@ class K2BackboneV2:
     K2-Backbone v2: NeuroSwarm-Integrated Pipeline
     
     Pipeline:
-      K2.6 TaskSpec → NecroSwarmRouter (cost-optimized)
+      Ollama Cloud TaskSpec → NecroSwarmRouter (cost-optimized)
         → NeuroSwarmIntegratedExecutor (GBrain + Council)
         → ObliviarchAdapter (compression)
     """
     
     def __init__(
         self,
-        moonshot_key: Optional[str] = None,
+        ollama_key: Optional[str] = None,
+        model: str = "deepseek-v4-flash",
         use_neuroswarm: bool = True,
         enable_obliviarch: bool = True,
     ):
-        self.moonshot_key = moonshot_key or os.environ.get("MOONSHOT_API_KEY")
+        self.ollama_key = ollama_key or os.environ.get("OLLAMA_API_KEY")
+        self.model = model
         self.use_neuroswarm = use_neuroswarm
         self.enable_obliviarch = enable_obliviarch
         
-        self.decomposer = K2Decomposer(api_key=self.moonshot_key)
+        self.decomposer = K2Decomposer(api_key=self.ollama_key, model=self.model)
         self.router = NecroSwarmRouter()
         self.executor = NeuroSwarmIntegratedExecutor(
             use_neuroswarm=use_neuroswarm,
@@ -55,7 +57,7 @@ class K2BackboneV2:
         print(f"🎯 Task: {task[:80]}...")
         
         # Step 1: Decompose
-        print("\n📐 Step 1: K2.6 Decomposition...")
+        print(f"\n📐 Step 1: Decomposition ({self.model})...")
         spec = self.decomposer.decompose(task, context=context)
         print(f"   → {len(spec.subtasks)} subtasks")
         
@@ -90,6 +92,7 @@ def main():
     parser = argparse.ArgumentParser(description="K2-Backbone v2: NeuroSwarm-Integrated")
     parser.add_argument("task", nargs="+", help="Task description")
     parser.add_argument("--context", default="")
+    parser.add_argument("--model", default="deepseek-v4-flash", help="Ollama Cloud model for decomposition")
     parser.add_argument("--neuroswarm", action="store_true", default=True, dest="neuroswarm")
     parser.add_argument("--no-neuroswarm", action="store_false", dest="neuroswarm")
     parser.add_argument("--obliviarch", action="store_true", default=True, dest="obliviarch")
@@ -98,14 +101,15 @@ def main():
     args = parser.parse_args()
     
     task = " ".join(args.task)
-    moonshot_key = os.environ.get("MOONSHOT_API_KEY")
+    ollama_key = os.environ.get("OLLAMA_API_KEY")
     
-    if not moonshot_key:
-        print("❌ Set MOONSHOT_API_KEY")
+    if not ollama_key:
+        print("❌ Set OLLAMA_API_KEY")
         return 1
     
     backbone = K2BackboneV2(
-        moonshot_key=moonshot_key,
+        ollama_key=ollama_key,
+        model=args.model,
         use_neuroswarm=args.neuroswarm,
         enable_obliviarch=args.obliviarch,
     )

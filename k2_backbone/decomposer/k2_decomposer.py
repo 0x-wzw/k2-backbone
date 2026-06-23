@@ -1,12 +1,12 @@
 from __future__ import annotations
 """
-K2.6 Decomposer Adapter
+Ollama Cloud Decomposer Adapter
 
-Translates K2.6's natural language decomposition into structured TaskSpec
-that the 0x-wzw swarm stack can consume.
+Translates natural language task decomposition into structured TaskSpec
+using Ollama Cloud models via the native Ollama client.
 
-Strategy: Prompt-for-Decomposition. K2.6 emits JSON via response_format.
-No attempt to intercept internal swarm state — that's a black box.
+Strategy: Prompt-for-Decomposition with format='json' enforcement.
+No Moonshot dependency — uses OLLAMA_API_KEY against ollama.com.
 """
 
 import json
@@ -18,12 +18,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 try:
-    import openai
+    from ollama import Client as OllamaClient
 except ImportError:
-    raise ImportError("openai>=1.0 required. pip install 'openai>=1.0'")
+    raise ImportError("ollama>=0.6 required. pip install ollama")
 
 
-# ── Schema constant: the exact prompt we feed K2.6 ──────────────────
+# ── Schema constant: the exact prompt we feed the model ─────────────
 
 TASK_DECOMPOSITION_SCHEMA = {
     "type": "object",
@@ -70,7 +70,7 @@ SYSTEM_PROMPT = """You are an expert task decomposer. Given a complex task, brea
 4. Risk level should reflect overall task complexity
 5. Maximum 20 subtasks for clarity
 
-Return ONLY valid JSON. No explanations outside the JSON block."""
+Return ONLY valid JSON matching the requested schema. No explanations outside the JSON block."""
 
 
 # ── Data classes ──────────────────────────────────────────────────────
@@ -148,19 +148,21 @@ class TaskSpec:
 
 class K2Decomposer:
     """
-    Adapter that prompts K2.6 for structured decomposition,
+    Adapter that prompts an Ollama Cloud model for structured decomposition,
     then maps the result to our TaskSpec schema.
     """
 
     def __init__(
         self,
         api_key: str,
-        base_url: str = "https://api.moonshot.cn/v1",
-        model: str = "kimi-k2.6",
+        model: str = "deepseek-v4-flash",
         max_subtasks: int = 20,
         budget_usd: float = 10.0,
     ):
-        self.client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        self.client = OllamaClient(
+            host="https://ollama.com",
+            headers={"Authorization": f"Bearer {api_key}"},
+        )
         self.model = model
         self.max_subtasks = max_subtasks
         self.budget_usd = budget_usd
@@ -172,33 +174,39 @@ class K2Decomposer:
         options: Optional[dict] = None,
     ) -> TaskSpec:
         """
-        Send task to K2.6, get structured decomposition, map to TaskSpec.
+        Send task to Ollama Cloud, get structured decomposition, map to TaskSpec.
         """
-        user_content = f"Task: {task}\n\n"
-        if context:
-            user_content += f"Context: {context}\n\n"
-        user_content += f"Maximum subtasks: {self.max_subtasks}"
+        schema_json = json.dumps(TASK_DECOMPOSITION_SCHEMA, indent=2)
+        user_content = f"""Task: {task}
+
+Context: {context or '(none)'}
+
+Maximum subtasks: {self.max_subtasks}
+
+You MUST return a JSON object matching this exact schema:
+{schema_json}
+
+Return ONLY the JSON object, no markdown, no code fences, no explanation."""
 
         # ── Stage 1: Decomposition ─────────────────────────────────
-        response = self.client.chat.completions.create(
+        response = self.client.chat(
             model=self.model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_content},
             ],
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "task_decomposition",
-                    "schema": TASK_DECOMPOSITION_SCHEMA,
-                    "strict": True,
-                },
-            },
-            temperature=0.2,
+            format="json",
+            stream=False,
+            options={"temperature": 0.2},
         )
 
-        raw_json = response.choices[0].message.content
-        parsed = json.loads(raw_json)
+        raw_content = response["message"]["content"]
+
+        # Strip markdown code fences if the model wraps the JSON
+        raw_content = re.sub(r"^```(?:json)?\s*", "", raw_content.strip())
+        raw_content = re.sub(r"\s*```$", "", raw_content.strip())
+
+        parsed = json.loads(raw_content)
 
         # ── Stage 2: Validation ────────────────────────────────────
         self._validate(parsed)
@@ -223,7 +231,7 @@ class K2Decomposer:
             assert s["id"] not in s.get("dependencies", []), f"Self-dependency: {s['id']}"
 
     def _to_task_spec(self, parsed: dict, original_task: str) -> TaskSpec:
-        """Map K2.6 decomposition to our TaskSpec schema."""
+        """Map decomposition to our TaskSpec schema."""
         subtasks = [Subtask.from_dict(s) for s in parsed["subtasks"]]
         total_tokens = sum(s.estimated_tokens for s in subtasks)
 
@@ -255,13 +263,13 @@ class K2Decomposer:
             metadata={
                 "created_at": datetime.now().isoformat(),
                 "version": "1.0.0",
-                "source": "k2.6_decomposer",
+                "source": "ollama_cloud_decomposer",
             },
         )
 
     def synthesize(self, results: list[dict], original_task: str) -> str:
         """
-        Stage 3: Feed subtask results back to K2.6 for final synthesis.
+        Stage 3: Feed subtask results back to the model for final synthesis.
         Optional — only needed if coherent final output is required.
         """
         synthesis_prompt = f"""Synthesize these subtask outputs into a cohesive deliverable.
@@ -273,15 +281,16 @@ Subtask results:
 
 Produce a unified, well-structured response."""
 
-        response = self.client.chat.completions.create(
+        response = self.client.chat(
             model=self.model,
             messages=[
                 {"role": "system", "content": "You are a synthesis expert. Combine multiple work products into one coherent deliverable."},
                 {"role": "user", "content": synthesis_prompt},
             ],
-            temperature=0.3,
+            stream=False,
+            options={"temperature": 0.3},
         )
-        return response.choices[0].message.content
+        return response["message"]["content"]
 
 
 # ── CLI ───────────────────────────────────────────────────────────────
@@ -290,26 +299,29 @@ def main():
     import argparse
     import os
 
-    parser = argparse.ArgumentParser(description="K2.6 Decomposer")
+    parser = argparse.ArgumentParser(description="Ollama Cloud Decomposer")
     parser.add_argument("task", help="Task description")
     parser.add_argument("--context", default="", help="Additional context")
+    parser.add_argument("--model", default="deepseek-v4-flash", help="Ollama Cloud model")
     parser.add_argument("--max-subtasks", type=int, default=20)
     parser.add_argument("--budget", type=float, default=10.0)
     parser.add_argument("--output", type=Path, default=Path("task_spec.json"))
     parser.add_argument("--synthesize", action="store_true", help="Run synthesis stage")
     args = parser.parse_args()
 
-    api_key = os.environ.get("MOONSHOT_API_KEY")
+    api_key = os.environ.get("OLLAMA_API_KEY")
     if not api_key:
-        raise SystemExit("MOONSHOT_API_KEY not set")
+        raise SystemExit("OLLAMA_API_KEY not set")
 
     decomposer = K2Decomposer(
         api_key=api_key,
+        model=args.model,
         max_subtasks=args.max_subtasks,
         budget_usd=args.budget,
     )
 
     print(f"Decomposing: {args.task[:60]}...")
+    print(f"Model: {args.model}")
     spec = decomposer.decompose(args.task, context=args.context)
     spec.save(args.output)
     print(f"TaskSpec saved to {args.output}")

@@ -190,14 +190,16 @@ class AutoMonBridge:
     
     def __init__(
         self,
-        moonshot_key: Optional[str] = None,
+        ollama_key: Optional[str] = None,
+        model: str = "deepseek-v4-flash",
         automon_config_path: Optional[Path] = None,
     ):
-        self.moonshot_key = moonshot_key
+        self.ollama_key = ollama_key
+        self.model = model
         self.automon_config = self._load_automon_config(automon_config_path)
         
         # Initialize K2-Backbone components
-        self.decomposer = K2Decomposer(api_key=moonshot_key) if moonshot_key else None
+        self.decomposer = K2Decomposer(api_key=ollama_key, model=model) if ollama_key else None
         self.router = NecroSwarmRouter(vote_method=VoteMethod.BORDA)
         self.executor = NeuroSwarmExecutor()
     
@@ -415,12 +417,12 @@ def main():
     args = parser.parse_args()
     
     task = " ".join(args.task)
-    moonshot_key = os.environ.get("MOONSHOT_API_KEY")
+    ollama_key = os.environ.get("OLLAMA_API_KEY")
     
-    if not moonshot_key:
-        print("⚠️  MOONSHOT_API_KEY not set — using AutoMon direct routing only")
+    if not ollama_key:
+        print("⚠️  OLLAMA_API_KEY not set — using AutoMon direct routing only")
     
-    bridge = AutoMonBridge(moonshot_key=moonshot_key)
+    bridge = AutoMonBridge(ollama_key=ollama_key)
     
     if args.compare:
         # Run both modes and compare

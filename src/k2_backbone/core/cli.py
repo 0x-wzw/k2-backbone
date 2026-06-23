@@ -27,15 +27,17 @@ class K2Backbone:
 
     def __init__(
         self,
-        moonshot_key: Optional[str] = None,
+        ollama_key: Optional[str] = None,
+        model: str = "deepseek-v4-flash",
         vote_method: VoteMethod = VoteMethod.BORDA,
         max_workers: int = 5,
     ):
-        self.moonshot_key = moonshot_key or os.environ.get("MOONSHOT_API_KEY")
+        self.ollama_key = ollama_key or os.environ.get("OLLAMA_API_KEY")
+        self.model = model
         self.vote_method = vote_method
         self.max_workers = max_workers
 
-        self.decomposer = K2Decomposer(api_key=self.moonshot_key)
+        self.decomposer = K2Decomposer(api_key=self.ollama_key, model=self.model)
         self.router = NecroSwarmRouter(vote_method=vote_method)
         self.executor = NeuroSwarmExecutor(max_workers=max_workers)
 
@@ -46,7 +48,7 @@ class K2Backbone:
         print(f"🎯 Task: {task[:80]}...")
 
         # Step 1: Decompose
-        print("\n📐 Step 1: Decomposing with K2.6...")
+        print(f"\n📐 Step 1: Decomposing with {self.model}...")
         spec = self.decomposer.decompose(task, context=context)
         print(f"   → {len(spec.subtasks)} subtasks identified")
 
@@ -85,9 +87,10 @@ class K2Backbone:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="K2-Backbone: K2.6's Production Backbone")
+    parser = argparse.ArgumentParser(description="K2-Backbone: Ollama Cloud Pipeline")
     parser.add_argument("task", nargs="+", help="Task description")
     parser.add_argument("--context", default="", help="Additional context")
+    parser.add_argument("--model", default="deepseek-v4-flash", help="Ollama Cloud model for decomposition")
     parser.add_argument("--method", choices=["borda", "cost_first", "quality_first"], default="borda")
     parser.add_argument("--workers", type=int, default=5)
     parser.add_argument("--output", type=Path, default=Path("k2_result.json"))
@@ -95,14 +98,15 @@ def main():
     args = parser.parse_args()
 
     task = " ".join(args.task)
-    moonshot_key = os.environ.get("MOONSHOT_API_KEY")
+    ollama_key = os.environ.get("OLLAMA_API_KEY")
 
-    if not moonshot_key:
-        print("❌ Set MOONSHOT_API_KEY environment variable")
+    if not ollama_key:
+        print("❌ Set OLLAMA_API_KEY environment variable")
         return 1
 
     backbone = K2Backbone(
-        moonshot_key=moonshot_key,
+        ollama_key=ollama_key,
+        model=args.model,
         vote_method=VoteMethod(args.method),
         max_workers=args.workers,
     )
