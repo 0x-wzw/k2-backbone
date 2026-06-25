@@ -36,7 +36,7 @@ TASK_DECOMPOSITION_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "id": {"type": "string", "pattern": "^sub_[0-9]{3}$"},
+                    "id": {"type": "string"},
                     "title": {"type": "string", "minLength": 3},
                     "description": {"type": "string", "minLength": 10},
                     "type": {
@@ -92,7 +92,7 @@ class Subtask:
         return cls(
             id=d["id"],
             title=d["title"],
-            description=d["description"],
+            description=d.get("description", d.get("objective", d["title"])),
             type=d["type"],
             dependencies=d.get("dependencies", []),
             estimated_tokens=d.get("estimated_tokens", 4096),

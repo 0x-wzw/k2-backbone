@@ -1,0 +1,10 @@
+{
+  "task_type": "general",
+  "pattern": "general",
+  "frequency": 1,
+  "success_rate": 0.0,
+  "avg_duration_ms": 0,
+  "avg_cost_usd": 0.0,
+  "models_used": [],
+  "tags": []
+}

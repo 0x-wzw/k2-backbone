@@ -183,29 +183,21 @@ class OpenClawSubagentDispatcher:
     
     def _spawn_subagent(self, spawn: SubagentSpawn) -> dict:
         """
-        Spawn a single subagent with the correct model override.
+        Prepare a subagent spawn intent with model override.
         
-        In production, this calls sessions_spawn with model parameter.
-        For now, returns the spawn intent for the orchestrator to execute.
+        Returns a structured spawn intent that the orchestrator
+        executes via sessions_spawn(task=..., model=...).
         """
         # Build the task prompt for this subtask
         task_prompt = self._build_subtask_prompt(spawn)
         
-        # The actual spawn call would be:
-        # sessions_spawn(
-        #     task=task_prompt,
-        #     model=spawn.assigned_model,
-        #     taskName=f"sub_{spawn.subtask_id}",
-        # )
-        
-        # For now, return the spawn intent
         return {
             "subtask_id": spawn.subtask_id,
             "title": spawn.title,
             "assigned_model": spawn.assigned_model,
             "task_type": spawn.task_type,
             "status": "ready",
-            "prompt": task_prompt[:200] + "...",
+            "prompt": task_prompt,
             "estimated_cost_usd": self._estimate_subtask_cost(spawn),
             "error": None,
         }

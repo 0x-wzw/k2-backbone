@@ -36,7 +36,7 @@ TASK_DECOMPOSITION_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "id": {"type": "string", "pattern": "^sub_[0-9]{3}$"},
+                    "id": {"type": "string"},
                     "title": {"type": "string", "minLength": 3},
                     "description": {"type": "string", "minLength": 10},
                     "type": {

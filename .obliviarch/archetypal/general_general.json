@@ -1,0 +1,12 @@
+{
+  "domain": "general",
+  "archetype": "general_general",
+  "core_pattern": "general",
+  "success_factors": [],
+  "failure_modes": [
+    "timeout"
+  ],
+  "optimal_model": "",
+  "avg_complexity": "moderate",
+  "compression_ratio": 500.0
+}
